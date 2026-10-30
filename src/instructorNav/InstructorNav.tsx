@@ -13,6 +13,9 @@ export interface TabProps {
   sortOrder: number,
 }
 
+// Tabs suppressed in the Uber deployment
+const HIDDEN_TAB_IDS = new Set(['grading']);
+
 const InstructorNav = () => {
   const { courseId = '', tabId = '' } = useParams<{ courseId: string, tabId?: string }>();
   const { useTabsInfo, navTabsSlotId } = useDashboardConfig();
@@ -47,7 +50,7 @@ const InstructorNav = () => {
       tabMap.set(slotTab.tabId, slotTab);
     });
 
-    const allTabs = Array.from(tabMap.values());
+    const allTabs = Array.from(tabMap.values()).filter(tab => !HIDDEN_TAB_IDS.has(tab.tabId));
 
     // Tabs are sorted by sortOrder, with a fallback to 1000 to be placed at the end for tabs that don't have sortOrder defined (to avoid NaN issues)
     return allTabs.sort((a, b) => (a.sortOrder ?? 1000) - (b.sortOrder ?? 1000));
