@@ -13,7 +13,7 @@ export interface TabProps {
   sortOrder: number,
 }
 
-// Tabs suppressed in the Uber deployment
+// Uber deployment: tabs left out of the nav (API or slot). Their routes still resolve by URL.
 const HIDDEN_TAB_IDS = new Set(['grading']);
 
 const InstructorNav = () => {

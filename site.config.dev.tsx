@@ -1,46 +1,63 @@
-import React from 'react';
-import { EnvironmentTypes, SiteConfig, WidgetOperationTypes, footerApp, headerApp, shellApp } from '@openedx/frontend-base';
+import {
+  EnvironmentTypes,
+  LinkMenuItem,
+  SiteConfig,
+  SlotOperation,
+  WidgetOperationTypes,
+  defineMessages,
+  footerApp,
+  headerApp,
+  shellApp,
+} from '@openedx/frontend-base';
 
 import { instructorDashboardApp } from './src';
 
 import '@openedx/frontend-base/shell/style';
 
-// Slot/widget IDs for the header app (from @openedx/frontend-base/dist/shell/header/app.js)
-const WIDGET_DESKTOP_PRIMARY_LINKS = 'org.openedx.frontend.widget.header.desktopPrimaryLinks.v1';
-const WIDGET_DESKTOP_SECONDARY_LINKS = 'org.openedx.frontend.widget.header.desktopSecondaryLinks.v1';
-const WIDGET_MOBILE_MENU_LINKS = 'org.openedx.frontend.widget.header.mobileMenuLinks.v1';
-const WIDGET_COURSE_NAV_BAR = 'org.openedx.frontend.widget.header.courseNavigationBar.v1';
-const WIDGET_MASQUERADE_BAR = 'org.openedx.frontend.widget.header.masqueradeBar.v1';
-const SLOT_DESKTOP_LEFT = 'org.openedx.frontend.slot.header.desktopLeft.v1';
-const SLOT_DESKTOP_RIGHT = 'org.openedx.frontend.slot.header.desktopRight.v1';
-const SLOT_AUTH_MENU = 'org.openedx.frontend.slot.header.authenticatedMenu.v1';
-const WIDGET_AUTH_MENU_PROFILE = 'org.openedx.frontend.widget.header.desktopAuthenticatedMenuProfile.v1';
-const WIDGET_AUTH_MENU_ACCOUNT = 'org.openedx.frontend.widget.header.desktopAuthenticatedMenuAccount.v1';
-const WIDGET_AUTH_MENU_LOGOUT = 'org.openedx.frontend.widget.header.desktopAuthenticatedMenuLogout.v1';
-
 const CMS_BASE_URL = 'http://studio.local.openedx.io:8001';
 
-const StudioMenuItem: React.FC = () => (
-  <a href={CMS_BASE_URL} className="dropdown-item">Studio</a>
-);
+const messages = defineMessages({
+  studio: {
+    id: 'uber.header.user.menu.studio',
+    defaultMessage: 'Studio',
+    description: 'User menu link to Studio in the instructor dashboard header',
+  },
+});
 
-const studioInstructorHeaderSlots = [
-  // Remove learner nav links — keep only logo + user menu (Studio style)
-  { slotId: SLOT_DESKTOP_LEFT, relatedId: WIDGET_DESKTOP_PRIMARY_LINKS, op: WidgetOperationTypes.REMOVE },
-  { slotId: SLOT_DESKTOP_RIGHT, relatedId: WIDGET_DESKTOP_SECONDARY_LINKS, op: WidgetOperationTypes.REMOVE },
-  { slotId: SLOT_DESKTOP_RIGHT, relatedId: WIDGET_MOBILE_MENU_LINKS, op: WidgetOperationTypes.REMOVE },
-  // Remove blue course bar and masquerade bar (belt-and-suspenders alongside provides.ts)
-  { slotId: 'org.openedx.frontend.slot.header.courseNavigationBar.v1', relatedId: WIDGET_COURSE_NAV_BAR, op: WidgetOperationTypes.REMOVE },
-  { slotId: 'org.openedx.frontend.slot.header.masqueradeBar.v1', relatedId: WIDGET_MASQUERADE_BAR, op: WidgetOperationTypes.REMOVE },
-  // Trim user dropdown to Studio link + Logout only
-  { slotId: SLOT_AUTH_MENU, relatedId: WIDGET_AUTH_MENU_PROFILE, op: WidgetOperationTypes.REMOVE },
-  { slotId: SLOT_AUTH_MENU, relatedId: WIDGET_AUTH_MENU_ACCOUNT, op: WidgetOperationTypes.REMOVE },
+// Studio-style header: logo and user menu only; the user menu holds Studio and Logout.
+// Widget and slot IDs come from frontend-base's header app (shell/header/app).
+const studioStyleHeaderSlots: SlotOperation[] = [
   {
-    slotId: SLOT_AUTH_MENU,
-    id: 'uber.widget.header.studioLink',
-    relatedId: WIDGET_AUTH_MENU_LOGOUT,
+    slotId: 'org.openedx.frontend.slot.header.desktopLeft.v1',
+    relatedId: 'org.openedx.frontend.widget.header.desktopPrimaryLinks.v1',
+    op: WidgetOperationTypes.REMOVE,
+  },
+  {
+    slotId: 'org.openedx.frontend.slot.header.desktopRight.v1',
+    relatedId: 'org.openedx.frontend.widget.header.desktopSecondaryLinks.v1',
+    op: WidgetOperationTypes.REMOVE,
+  },
+  {
+    slotId: 'org.openedx.frontend.slot.header.mobileMenu.v1',
+    relatedId: 'org.openedx.frontend.widget.header.mobileMenuLinks.v1',
+    op: WidgetOperationTypes.REMOVE,
+  },
+  {
+    slotId: 'org.openedx.frontend.slot.header.authenticatedMenu.v1',
+    relatedId: 'org.openedx.frontend.widget.header.desktopAuthenticatedMenuProfile.v1',
+    op: WidgetOperationTypes.REMOVE,
+  },
+  {
+    slotId: 'org.openedx.frontend.slot.header.authenticatedMenu.v1',
+    relatedId: 'org.openedx.frontend.widget.header.desktopAuthenticatedMenuAccount.v1',
+    op: WidgetOperationTypes.REMOVE,
+  },
+  {
+    slotId: 'org.openedx.frontend.slot.header.authenticatedMenu.v1',
+    id: 'uber.widget.header.authenticatedMenuStudio.v1',
+    relatedId: 'org.openedx.frontend.widget.header.desktopAuthenticatedMenuLogout.v1',
     op: WidgetOperationTypes.INSERT_BEFORE,
-    component: StudioMenuItem,
+    element: <LinkMenuItem label={messages.studio} url={CMS_BASE_URL} variant="dropdownItem" />,
   },
 ];
 
@@ -59,8 +76,8 @@ const siteConfig: SiteConfig = {
     {
       ...headerApp,
       slots: [
-        ...((headerApp as any).slots ?? []),
-        ...studioInstructorHeaderSlots,
+        ...(headerApp.slots ?? []),
+        ...studioStyleHeaderSlots,
       ],
     },
     footerApp,
@@ -73,14 +90,6 @@ const siteConfig: SiteConfig = {
     }
   ],
   externalRoutes: [
-    {
-      role: 'org.openedx.frontend.role.profile',
-      url: 'http://apps.local.openedx.io:1995/profile/'
-    },
-    {
-      role: 'org.openedx.frontend.role.account',
-      url: 'http://apps.local.openedx.io:1997/account/'
-    },
     {
       role: 'org.openedx.frontend.role.logout',
       url: 'http://local.openedx.io:8000/logout'

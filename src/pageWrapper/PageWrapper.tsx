@@ -1,9 +1,9 @@
 import { useIntl } from '@openedx/frontend-base';
 import { Container } from '@openedx/paragon';
+import InstructorNav from '@src/instructorNav/InstructorNav';
 import { AccessErrorGuard } from '@src/providers/AccessErrorProvider';
 import AccessErrorObserver from '@src/providers/AccessErrorObserver';
 import { useDashboardConfig } from '@src/dashboardConfig/DashboardConfigContext';
-import InstructorNav from '@src/instructorNav/InstructorNav';
 
 const PageWrapper = ({ children }: { children: React.ReactNode }) => {
   const { formatMessage } = useIntl();
