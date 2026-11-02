@@ -108,6 +108,27 @@ describe('InstructorNav', () => {
     expect(screen.queryByText('No ID')).not.toBeInTheDocument();
   });
 
+  it('hides the grading tab whether it comes from the API or a slot', () => {
+    (useParams as jest.Mock).mockReturnValue({ courseId: 'course-v1:edX+DemoX+Demo_Course', tabId: 'tab1' });
+    (useCourseInfo as jest.Mock).mockReturnValue({
+      data: {
+        tabs: [
+          { tabId: 'tab1', url: '/tab1', title: 'Tab 1', sortOrder: 1 },
+          { tabId: 'grading', url: '/grading', title: 'Grading', sortOrder: 2 },
+        ],
+      },
+      isLoading: false,
+    });
+    (useWidgetProps as jest.Mock).mockReturnValue([
+      { tabId: 'grading', url: '/grading', title: 'Slot Grading', sortOrder: 3 },
+    ]);
+
+    renderNav();
+    expect(screen.getByText('Tab 1')).toBeInTheDocument();
+    expect(screen.queryByText('Grading')).not.toBeInTheDocument();
+    expect(screen.queryByText('Slot Grading')).not.toBeInTheDocument();
+  });
+
   it('calls clearAlerts when a tab is selected', async () => {
     (useParams as jest.Mock).mockReturnValue({ courseId: 'course-v1:edX+DemoX+Demo_Course', tabId: 'tab1' });
     (useCourseInfo as jest.Mock).mockReturnValue({
